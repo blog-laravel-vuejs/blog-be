@@ -94,8 +94,12 @@ class UserService
         try {
             // Kiểm tra xem email đã tồn tại trong cơ sở dữ liệu hay chưa
             $userEmail = $this->userRepository->findUserbyEmail($request->email);
+            $userName = $this->userRepository->findUserbyUserName($request->username);
             if ($userEmail) {
                 return $this->responseError(400, 'Tài khoản đã tồn tại!');
+            }
+            if ($userName) {
+                return $this->responseError(400, 'Username đã tồn tại!');
             }
 
             // Khởi tạo mảng dữ liệu người dùng từ request
@@ -104,20 +108,15 @@ class UserService
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'username' => $request->username,
-                'avatar' => null,
-                'gender' => $request->gender,
-                'phone' => $request->phone,
-                'address' => $request->address,
-                'date_of_birth' => $request->date_of_birth,
-                'is_block' => 1,
+                'is_block' => 0,
             ];
 
-            // Kiểm tra và xử lý việc upload avatar nếu có
-            if ($request->hasFile('avatar')) {
-                $image = $request->file('avatar');
-                $uploadedFile = Cloudinary::upload($image->getRealPath(), ['folder' => 'avatars', 'resource_type' => 'auto']);
-                $data['avatar'] = $uploadedFile->getSecurePath();
-            }
+            // // Kiểm tra và xử lý việc upload avatar nếu có
+            // if ($request->hasFile('avatar')) {
+            //     $image = $request->file('avatar');
+            //     $uploadedFile = Cloudinary::upload($image->getRealPath(), ['folder' => 'avatars', 'resource_type' => 'auto']);
+            //     $data['avatar'] = $uploadedFile->getSecurePath();
+            // }
 
             // Tạo người dùng mới
             $user = $this->userRepository->createUser((object)$data);
@@ -128,44 +127,6 @@ class UserService
         }
     }
 
-    // public function userRegister(RequestUserRegister $request)
-    // {
-    //     try {
-    //         $filter = (object) [
-    //             'name' => $request->name,
-    //             'email' => $request->email,
-    //             'password' => Hash::make($request->password),
-    //             'username' => $request->username,
-    //             'avatar' => $request->avatar,
-    //             'gender' => $request->gender,
-    //             'phone' => $request->phone,
-    //             'address'=>$request->address,
-    //             'date_of_birth' =>$request->date_of_birth,
-    //             'is_block' => 1,
-
-    //         ];
-    //         $userEmail = $this->userRepository->findUserbyEmail($request->email);
-    //         if ($userEmail) {
-    //             return $this->responseError(400, 'Tài khoản đã tồn tại !');
-    //         } else {
-    //             if ($request->hasFile('avatar')) {
-    //                 // upload file
-    //                 $image = $request->file('avatar');
-    //                 $uploadedFile = Cloudinary::upload($image->getRealPath(), ['folder' => 'avatars', 'resource_type' => 'auto']);
-    //                 $avatar = $uploadedFile->getSecurePath();
-    //                 // upload profile
-    //                 $data = array_merge($request->all(), ['avatar' => $avatar]);
-    //                 // $user->update($data);
-    //             } 
-    //             // $filter->avatar = $this->saveAvatar($filter);
-    //             $user = $this->userRepository->createUser($filter);
-
-    //             return $this->responseOK(200, $user, 'Đăng kí tài khoản thành công !');
-    //         }
-    //     } catch (Throwable $e) {
-    //         return $this->responseError(400, $e->getMessage());
-    //     }
-    // }
 }
 
 

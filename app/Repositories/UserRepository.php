@@ -22,6 +22,9 @@ class UserRepository extends BaseRepository implements UserInterface
     {
         return (new self)->model->where('email', $email)->first();
     }
+    public static function findUserByUsername($username){
+        return (new self)->model->where('username', $username)->first();
+    }
 
     public static function findUserById($id)
     {
@@ -58,8 +61,8 @@ class UserRepository extends BaseRepository implements UserInterface
             ->when(!empty($filter->email), function ($q) use ($filter) {
                 $q->where('email', $filter->email);
             })
-            ->when(!empty($filter->role), function ($q) use ($filter) {
-                $q->where('role', $filter->role);
+            ->when(!empty($filter->username), function ($q) use ($filter) {
+                $q->where('username', $filter->username);
             });
 
         return $user;
@@ -73,12 +76,7 @@ class UserRepository extends BaseRepository implements UserInterface
                 'email' => $filter->email,
                 'password' => $filter->password,
                 'username' => $filter->username,
-                'avatar' => $filter->avatar,
-                'gender' => $filter->gender,
-                'phone' => $filter->phone,
-                'address' => $filter->address,
-                'date_of_birth' => $filter->date_of_birth,
-                'is_block' => 1,
+                'is_block' => 0,
             ]);
             DB::commit();
 
