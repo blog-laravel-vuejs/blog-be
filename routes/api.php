@@ -32,6 +32,8 @@ Route::prefix('admin')->controller(AdminController::class)->group(function () {
 Route::prefix('user')->controller(UserController::class)->group(function () {
     Route::post('login', 'login');
     Route::post('register', 'register');
+    Route::post('forgot-pw-sendcode', 'forgotPassword');
+    Route::post('forgot-update', 'forgotUpdate');
     Route::middleware('auth:user_api')->group(function () {
         Route::get('logout', 'logout');
     });

@@ -42,22 +42,14 @@ class CategorySeeder extends Seeder
         foreach ($categories as $index => $category) {
             try {
                 while (true) {
-                    $client = new Client();
-                    $response = $client->get('https://picsum.photos/200/200');
-                    $imageContent = $response->getBody()->getContents();
-                    $nameImage = uniqid() . '.jpg';
-                    $thumbnail = $nameImage;
-                    if (file_put_contents($thumbnail, $imageContent)) {
-                        Category::create([
+                 Category::create([
                             'name' => $category['name'],
                             'description_category' => $category['description_category'],
-                            'thumbnail' => $thumbnail,
+                            'thumbnail' => null,
                             'search_number' => 0,
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]);
-                        break;
-                    }
                 }
             } catch (\Exception $e) {
                 // return $e->getMessage();
