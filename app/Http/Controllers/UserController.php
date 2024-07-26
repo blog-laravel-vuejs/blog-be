@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Requests\RequestCreatePassword;
 use App\Http\Requests\RequestLogin;
+use App\Http\Requests\RequestSendForgot;
 use App\Http\Requests\RequestUserRegister;
 use App\Services\UserService;
 use Illuminate\Http\Request;
@@ -38,7 +40,16 @@ class UserController extends Controller
     {
         return $this->userService->verifyEmail($request);
     }
+    // forgot password
+    public function forgotPassword(RequestSendForgot $request)
+    {
+        return $this->userService->forgotPassword($request);
+    }
 
+    public function forgotUpdate(RequestCreatePassword $request)
+    {
+        return $this->userService->forgotUpdate($request);
+    }
 
    
 }
