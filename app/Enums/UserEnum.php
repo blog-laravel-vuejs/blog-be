@@ -15,7 +15,9 @@ class UserEnum extends BaseEnum
 
     public const DOMAIN_PATH = 'https://vanmanh.azurewebsites.net/'; // azure
 
-    public const FORGOT_FORM_USER = 'https://linebotpro.vercel.app/reset-password?token=';
+    // public const FORGOT_FORM_USER = 'https://linebotpro.vercel.app/reset-password?token=';
+    public const FORGOT_FORM_USER = 'http://localhost:8080/reset-password?token=';
+    
 
     public const FORGOT_FORM_ADMIN = 'https://pbl6-health-care.up.railway.app/auth/reset-password/admin?token=';
 
