@@ -68,9 +68,9 @@ class UserService
                 if ($is_block != 1) {
                     return $this->responseError(400, 'Tài khoản của bạn đã bị khóa hoặc chưa được phê duyệt !');
                 }
-                if ($user->email_verified_at == null) {
-                    return $this->responseError(400, 'Email này chưa được xác nhận , hãy kiểm tra và xác nhận nó trước khi đăng nhập !');
-                }
+                // if ($user->email_verified_at == null) {
+                //     return $this->responseError(400, 'Email này chưa được xác nhận , hãy kiểm tra và xác nhận nó trước khi đăng nhập !');
+                // }
             }
 
             $credentials = request(['email', 'password']);
@@ -122,6 +122,28 @@ class UserService
             $user = $this->userRepository->createUser((object)$data);
 
             return $this->responseOK(200, $user, 'Đăng kí tài khoản thành công!');
+        } catch (Throwable $e) {
+            return $this->responseError(400, $e->getMessage());
+        }
+    }
+
+    // verify email
+    public function verifyEmail(Request $request)
+    {
+        try {
+            $token = $request->token ?? '';
+            $user = $this->userRepository->findUserByTokenVerifyEmail($token);
+            if ($user) {
+                $data = [
+                    'email_verified_at' => now(),
+                    'token_verify_email' => null,
+                ];
+                $user = $this->userRepository->updateUser($user->id, $data);
+
+                return $this->responseOK(200, null, 'Email của bạn đã được xác nhận !');
+            } else {
+                return $this->responseError(400, 'Token đã hết hạn !');
+            }
         } catch (Throwable $e) {
             return $this->responseError(400, $e->getMessage());
         }
