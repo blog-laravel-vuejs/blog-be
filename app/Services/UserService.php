@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\UserEnum;
+use App\Http\Requests\RequestChangePassword;
 use App\Http\Requests\RequestCreatePassword;
 use App\Http\Requests\RequestLogin;
 use App\Http\Requests\RequestSendForgot;
@@ -203,9 +204,27 @@ class UserService
             DB::rollback();
 
             return $this->responseError($e->getMessage(), 400);
+        }   
+    }
+    public function changePassword(RequestChangePassword $request)
+    {
+        DB::beginTransaction();
+        try {
+            $user = User::find(auth('user_api')->user()->id);
+            if (!(Hash::check($request->get('current_password'), $user->password))) {
+                return $this->responseError('Your password is incorrect !');
+            }
+            $data = ['password' => Hash::make($request->get('new_password'))];
+            $user->update($data);
+            DB::commit();
+
+            return $this->responseSuccess('Password change successful !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage());
         }
     }
-
 }
 
 
