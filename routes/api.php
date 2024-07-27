@@ -23,7 +23,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('admin')->controller(AdminController::class)->group(function () {
     Route::post('login', 'login');
     Route::middleware('auth:admin_api')->group(function () {
+        Route::get('profile', 'profile');
         Route::get('logout', 'logout');
+        
     });
 
 });

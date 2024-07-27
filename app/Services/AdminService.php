@@ -55,6 +55,15 @@ class AdminService
             return $this->responseError($e->getMessage());
         }
     }
+    public function profile(Request $request)
+    {
+        try {
+            $admin = auth('admin_api')->user();
 
+            return $this->responseSuccessWithData($admin, 'Get information account successfully !');
+        } catch (Throwable $e) {
+            return $this->responseError($e->getMessage());
+        }
+    }
    
 }
