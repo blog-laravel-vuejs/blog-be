@@ -37,5 +37,6 @@ Route::prefix('user')->controller(UserController::class)->group(function () {
     Route::middleware('auth:user_api')->group(function () {
         Route::get('logout', 'logout');
         Route::get('profile', 'profile');
+        Route::post('update', 'updateProfile');
     });
 });

@@ -6,6 +6,7 @@ use App\Enums\UserEnum;
 use App\Http\Requests\RequestCreatePassword;
 use App\Http\Requests\RequestLogin;
 use App\Http\Requests\RequestSendForgot;
+use App\Http\Requests\RequestUpdateProfileUser;
 use App\Http\Requests\RequestUserRegister;
 use App\Jobs\SendForgotPassword;
 use App\Models\PasswordReset;
@@ -172,6 +173,39 @@ class UserService
             return $this->responseError($e->getMessage());
         }
     }
+    public function updateProfile(RequestUpdateProfileUser $request)
+    {
+        DB::beginTransaction();
+        try {
+            $user = User::find(auth('user_api')->user()->id);
+            if ($request->hasFile('avatar')) {
+                // upload file
+                $image = $request->file('avatar');
+                $uploadedFile = Cloudinary::upload($image->getRealPath(), ['folder' => 'avatars/users', 'resource_type' => 'auto']);
+                $avatar = $uploadedFile->getSecurePath();
+                // delete old file
+                if ($user->avatar) {
+                    $id_file = explode('.', implode('/', array_slice(explode('/', $user->avatar), 7)))[0];
+                    Cloudinary::destroy($id_file);
+                }
+                // upload profile
+                $data = array_merge($request->all(), ['avatar' => $avatar]);
+                $user->update($data);
+            } else {
+                $request['avatar'] = $user->avatar;
+                $user->update($request->all());
+            }
+
+            DB::commit();
+
+            return $this->responseSuccessWithData($user, 'Update profile successful !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage(), 400);
+        }
+    }
+
 }
 
 
