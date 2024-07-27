@@ -4,11 +4,13 @@ namespace App\Services;
 
 
 use App\Http\Requests\RequestLogin;
+use App\Http\Requests\RequestUpdateProfileAdmin;
 use App\Models\Admin;
 use App\Repositories\AdminInterface;
 use App\Traits\APIResponse;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class AdminService
@@ -65,5 +67,37 @@ class AdminService
             return $this->responseError($e->getMessage());
         }
     }
-   
+    public function updateProfile(RequestUpdateProfileAdmin $request)
+    {
+        DB::beginTransaction();
+        try {
+            $user = Admin::find(auth('admin_api')->user()->id);
+            if ($request->hasFile('avatar')) {
+                // upload file
+                $image = $request->file('avatar');
+                $uploadedFile = Cloudinary::upload($image->getRealPath(), ['folder' => 'avatars/admin', 'resource_type' => 'auto']);
+                $avatar = $uploadedFile->getSecurePath();
+                // delete old file
+                if ($user->avatar) {
+                    $id_file = explode('.', implode('/', array_slice(explode('/', $user->avatar), 7)))[0];
+                    Cloudinary::destroy($id_file);
+                }
+                // upload profile
+                $data = array_merge($request->all(), ['avatar' => $avatar]);
+                $user->update($data);
+            } else {
+                $request['avatar'] = $user->avatar;
+                $user->update($request->all());
+            }
+
+            DB::commit();
+
+            return $this->responseSuccessWithData($user, 'Update profile successful !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage(), 400);
+        }
+    }
+
 }

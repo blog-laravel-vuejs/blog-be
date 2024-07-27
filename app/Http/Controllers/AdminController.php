@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 
+
 use App\Http\Requests\RequestLogin;
 
 use App\Services\AdminService;
 use Illuminate\Http\Request;
-
+use App\Http\Requests\RequestUpdateProfileAdmin;
 class AdminController extends Controller
 {
     protected AdminService $adminService;
@@ -29,5 +30,9 @@ class AdminController extends Controller
     public function profile(Request $request)
     {
         return $this->adminService->profile($request);
+    }
+    public function updateProfile(RequestUpdateProfileAdmin $request)
+    {
+        return $this->adminService->updateProfile($request);
     }
 }

@@ -25,6 +25,7 @@ Route::prefix('admin')->controller(AdminController::class)->group(function () {
     Route::middleware('auth:admin_api')->group(function () {
         Route::get('profile', 'profile');
         Route::get('logout', 'logout');
+        Route::post('update', 'updateProfile');
         
     });
 
