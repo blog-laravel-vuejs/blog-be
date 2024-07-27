@@ -152,7 +152,26 @@ class UserService
             return $this->responseError($e->getMessage(), 400);
         }
     }
+    public function logout(Request $request)
+    {
+        try {
+            auth('user_api')->logout();
 
+            return $this->responseSuccess('Log out successfully !');
+        } catch (Throwable $e) {
+            return $this->responseError($e->getMessage());
+        }
+    }
+    public function profile(Request $request)
+    {
+        try {
+            $user = auth('user_api')->user();
+
+            return $this->responseSuccessWithData($user, 'Get information account successfully !');
+        } catch (Throwable $e) {
+            return $this->responseError($e->getMessage());
+        }
+    }
 }
 
 

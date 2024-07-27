@@ -36,5 +36,6 @@ Route::prefix('user')->controller(UserController::class)->group(function () {
     Route::post('forgot-update', 'forgotUpdate');
     Route::middleware('auth:user_api')->group(function () {
         Route::get('logout', 'logout');
+        Route::get('profile', 'profile');
     });
 });

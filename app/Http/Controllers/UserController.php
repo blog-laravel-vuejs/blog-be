@@ -22,14 +22,9 @@ class UserController extends Controller
         return $this->userService->login($request);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        auth('user_api')->logout();
-
-        return response()->json([
-            'message' => 'Đăng xuất thành công !',
-            'status' => 200,
-        ], 200);
+        return $this->userService->logout($request);
     }
     public function register(RequestUserRegister $request)
     {
@@ -50,6 +45,9 @@ class UserController extends Controller
     {
         return $this->userService->forgotUpdate($request);
     }
-
+    public function profile(Request $request)
+    {
+        return $this->userService->profile($request);
+    }
    
 }
