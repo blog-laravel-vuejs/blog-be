@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RequestAddUser;
 use App\Http\Requests\RequestChangeIsBlock;
+use App\Http\Requests\RequestChangeIsBlockMany;
 use App\Http\Requests\RequestLogin;
 
 use App\Services\AdminService;
@@ -47,6 +48,9 @@ class AdminController extends Controller
     {
         return $this->adminService->changeIsBlockUser($request, $id_user);
     }
-    
+    public function changeIsBlockManyUser(RequestChangeIsBlockMany $request)
+    {
+        return $this->adminService->changeIsBlockManyUser($request);
+    }
     
 }
