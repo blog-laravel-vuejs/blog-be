@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Http\Requests\RequestAddUser;
+use App\Http\Requests\RequestChangeIsBlock;
 use App\Http\Requests\RequestLogin;
 use App\Http\Requests\RequestUpdateProfileAdmin;
 use App\Jobs\SendMailNotify;
@@ -196,5 +197,33 @@ class AdminService
             return $this->responseError($e->getMessage());
         }
     }
+    public function changeIsBlockUser(RequestChangeIsBlock $request, $id_user)
+    {
+        DB::beginTransaction();
+        try {
+            $user = User::find($id_user);
+            if ($user) {
+                $user->update(['is_block' => $request->is_block]);
+
+                if ($request->is_block == 0) $content = '<strong style="color:red">Your account has been locked by admin, if you think this is a mistake please contact the system !</strong>';
+                else $content = '<strong style="color:green">Your account has been unlocked !</strong>';
+
+                Queue::push(new SendMailNotify($user->email, $content));
+
+                DB::commit();
+
+                return $this->responseSuccessWithData($user, 'Change is block manager successfully !');
+            } else {
+                DB::commit();
+
+                return $this->responseError(404, 'Not found manager !');
+            }
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage());
+        }
+    }
+
 
 }

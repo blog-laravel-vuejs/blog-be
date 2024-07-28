@@ -28,6 +28,7 @@ Route::prefix('admin')->controller(AdminController::class)->group(function () {
         Route::post('update', 'updateProfile');
         Route::post('add-user', 'addUser');
         Route::get('users', 'getUsers');
+        Route::post('block-user/{id_user}', 'changeIsBlockUser');
     });
 
 });
