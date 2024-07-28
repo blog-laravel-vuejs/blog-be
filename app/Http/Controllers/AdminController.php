@@ -38,5 +38,11 @@ class AdminController extends Controller
     {
         return $this->adminService->addUser($request);
     }
-   
+    public function getUsers(Request $request)
+    {
+        return $this->adminService->getUsers($request);
+    }
+    
+    
+    
 }

@@ -27,6 +27,7 @@ Route::prefix('admin')->controller(AdminController::class)->group(function () {
         Route::get('logout', 'logout');
         Route::post('update', 'updateProfile');
         Route::post('add-user', 'addUser');
+        Route::get('users', 'getUsers');
     });
 
 });

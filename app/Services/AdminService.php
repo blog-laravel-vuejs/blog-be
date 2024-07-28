@@ -9,6 +9,7 @@ use App\Jobs\SendMailNotify;
 use App\Models\Admin;
 use App\Models\User;
 use App\Repositories\AdminInterface;
+use App\Repositories\UserRepository;
 use App\Traits\APIResponse;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
@@ -132,6 +133,66 @@ class AdminService
         } catch (Throwable $e) {
             DB::rollback();
 
+            return $this->responseError($e->getMessage());
+        }
+    }
+    public function getUsers(Request $request)
+    {
+        try {
+            $orderBy = $request->typesort ?? 'id';
+            switch ($orderBy) {
+                case 'name':
+                    $orderBy = 'name';
+                    break;
+
+                case 'address':
+                    $orderBy = 'address';
+                    break;
+
+                case 'phone':
+                    $orderBy = 'phone';
+                    break;
+
+                case 'gender':
+                    $orderBy = 'gender';
+                    break;
+
+                case 'new':
+                    $orderBy = 'id';
+                    break;
+
+                default:
+                    $orderBy = 'id';
+                    break;
+            }
+
+            $orderDirection = $request->sortlatest ?? 'true';
+            switch ($orderDirection) {
+                case 'true':
+                    $orderDirection = 'DESC';
+                    break;
+
+                default:
+                    $orderDirection = 'ASC';
+                    break;
+            }
+
+            $filter = (object) [
+                'search' => $request->search ?? '',
+                'is_block' => $request->is_block ?? 'all',
+                'orderBy' => $orderBy,
+                'orderDirection' => $orderDirection,
+            ];
+
+            $users = UserRepository::getAllUsers($filter);
+            if (!(empty($request->paginate))) {
+                $users = $users->paginate($request->paginate);
+            } else {
+                $users = $users->get();
+            }
+
+            return $this->responseSuccessWithData($users, 'Get managers information successfully!');
+        } catch (Throwable $e) {
             return $this->responseError($e->getMessage());
         }
     }
