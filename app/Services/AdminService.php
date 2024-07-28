@@ -2,15 +2,23 @@
 
 namespace App\Services;
 
-
+use App\Http\Requests\RequestAddUser;
 use App\Http\Requests\RequestLogin;
 use App\Http\Requests\RequestUpdateProfileAdmin;
+use App\Jobs\SendMailNotify;
 use App\Models\Admin;
+use App\Models\User;
 use App\Repositories\AdminInterface;
 use App\Traits\APIResponse;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
+
 use Throwable;
 
 class AdminService
@@ -97,6 +105,34 @@ class AdminService
             DB::rollback();
 
             return $this->responseError($e->getMessage(), 400);
+        }
+    }
+    public function addUser(RequestAddUser $request)
+    {
+        DB::beginTransaction();
+        try {
+            $new_password = Str::random(8);
+            $data = array_merge($request->all(), [
+                'password' => Hash::make($new_password),
+                'is_block' => 0,
+                'email_verified_at' => now(),
+            ]);
+
+            $user = User::create($data);
+
+            $content = 'Below is your account information, please use it to log in to the system, then change your 
+            password to ensure account security. <br> Email : <strong>' . $user->email .
+                '</strong> <br> Password : <strong>' . $new_password . '</strong>';
+
+            Queue::push(new SendMailNotify($user->email, $content));
+
+            DB::commit();
+
+            return $this->responseSuccessWithData($user, 'Added user account successfully !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage());
         }
     }
 

@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
-
+use App\Http\Requests\RequestAddUser;
 use App\Http\Requests\RequestLogin;
 
 use App\Services\AdminService;
@@ -35,4 +34,9 @@ class AdminController extends Controller
     {
         return $this->adminService->updateProfile($request);
     }
+    public function addUser(RequestAddUser $request)
+    {
+        return $this->adminService->addUser($request);
+    }
+   
 }
