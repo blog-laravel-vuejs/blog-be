@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-
+use App\Http\Requests\RequestChangePassword;
 use App\Http\Requests\RequestLogin;
 use App\Http\Requests\RequestUpdateProfileAdmin;
 use App\Models\Admin;
@@ -11,6 +11,7 @@ use App\Traits\APIResponse;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Throwable;
 
 class AdminService
@@ -99,5 +100,23 @@ class AdminService
             return $this->responseError($e->getMessage(), 400);
         }
     }
+    public function changePassword(RequestChangePassword $request)
+    {
+        DB::beginTransaction();
+        try {
+            $admin =Admin::find(auth('admin_api')->user()->id);
+            if (!(Hash::check($request->get('current_password'), $admin->password))) {
+                return $this->responseError('Your password is incorrect !');
+            }
+            $data = ['password' => Hash::make($request->get('new_password'))];
+            $admin->update($data);
+            DB::commit();
 
+            return $this->responseSuccess('Password change successful !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage());
+        }
+    }    
 }

@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
-
+use App\Http\Requests\RequestChangePassword;
 use App\Http\Requests\RequestLogin;
 
 use App\Services\AdminService;
@@ -34,5 +33,9 @@ class AdminController extends Controller
     public function updateProfile(RequestUpdateProfileAdmin $request)
     {
         return $this->adminService->updateProfile($request);
+    }
+    public function changePassword(RequestChangePassword $request)
+    {
+        return $this->adminService->changePassword($request);
     }
 }

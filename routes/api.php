@@ -26,6 +26,7 @@ Route::prefix('admin')->controller(AdminController::class)->group(function () {
         Route::get('profile', 'profile');
         Route::get('logout', 'logout');
         Route::post('update', 'updateProfile');
+        Route::post('change-password', 'changePassword');
         
     });
 
