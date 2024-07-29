@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RequestAddMember;
 use App\Http\Requests\RequestAddUser;
 use App\Http\Requests\RequestChangeIsBlock;
 use App\Http\Requests\RequestChangeIsBlockMany;
@@ -52,5 +53,8 @@ class AdminController extends Controller
     {
         return $this->adminService->changeIsBlockManyUser($request);
     }
-    
+    public function addMember(RequestAddMember $request)
+    {
+        return $this->adminService->addMember($request);
+    }
 }

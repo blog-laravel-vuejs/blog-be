@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Requests\RequestAddMember;
 use App\Http\Requests\RequestAddUser;
 use App\Http\Requests\RequestChangeIsBlock;
 use App\Http\Requests\RequestChangeIsBlockMany;
@@ -245,6 +246,33 @@ class AdminService
             return $this->responseError($e->getMessage());
         }
     }
+
+    public function addMember(RequestAddMember $request)
+    {
+        DB::beginTransaction();
+        try {
+            $manager = Admin::find(auth('admin_api')->user()->id);
+            $new_password = Str::random(8);
+            $data = array_merge($request->all(), [
+                'password' => Hash::make($new_password),
+                'role' => 'admin',
+                'email_verified_at' => now(),
+            ]);
+            $member = Admin::create($data);
+            $content = 'Below is your account information, please use it to log in to the system, then change your 
+            password to ensure account security. <br> Email : <strong>' . $member->email .
+                '</strong> <br> Password : <strong>' . $new_password . '</strong>';
+            Queue::push(new SendMailNotify($member->email, $content));
+            DB::commit();
+
+            return $this->responseSuccessWithData($member, 'Added member account successfully !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage());
+        }
+    }
+
 
 
 }
