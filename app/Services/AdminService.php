@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Http\Requests\RequestAddUser;
 use App\Http\Requests\RequestChangeIsBlock;
 use App\Http\Requests\RequestChangeIsBlockMany;
+use App\Http\Requests\RequestChangePassword;
 use App\Http\Requests\RequestLogin;
 use App\Http\Requests\RequestUpdateProfileAdmin;
 use App\Jobs\SendMailNotify;
@@ -21,7 +22,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
-
 use Throwable;
 
 class AdminService
@@ -108,6 +108,25 @@ class AdminService
             DB::rollback();
 
             return $this->responseError($e->getMessage(), 400);
+        }
+    }
+    public function changePassword(RequestChangePassword $request)
+    {
+        DB::beginTransaction();
+        try {
+            $admin = Admin::find(auth('admin_api')->user()->id);
+            if (!(Hash::check($request->get('current_password'), $admin->password))) {
+                return $this->responseError('Your password is incorrect !');
+            }
+            $data = ['password' => Hash::make($request->get('new_password'))];
+            $admin->update($data);
+            DB::commit();
+
+            return $this->responseSuccess('Password change successful !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage());
         }
     }
     public function addUser(RequestAddUser $request)
@@ -245,6 +264,5 @@ class AdminService
             return $this->responseError($e->getMessage());
         }
     }
-
 
 }

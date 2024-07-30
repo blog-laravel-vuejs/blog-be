@@ -26,10 +26,13 @@ Route::prefix('admin')->controller(AdminController::class)->group(function () {
         Route::get('profile', 'profile');
         Route::get('logout', 'logout');
         Route::post('update', 'updateProfile');
+        Route::post('change-password', 'changePassword');
         Route::post('add-user', 'addUser');
         Route::get('users', 'getUsers');
         Route::post('block-user/{id_user}', 'changeIsBlockUser');
         Route::post('block-many-user', 'changeIsBlockManyUser');
+        
+        
     });
 
 });

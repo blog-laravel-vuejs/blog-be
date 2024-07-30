@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Http\Requests\RequestAddUser;
 use App\Http\Requests\RequestChangeIsBlock;
 use App\Http\Requests\RequestChangeIsBlockMany;
+
+use App\Http\Requests\RequestChangePassword;
+
 use App\Http\Requests\RequestLogin;
 
 use App\Services\AdminService;
@@ -36,6 +40,7 @@ class AdminController extends Controller
     {
         return $this->adminService->updateProfile($request);
     }
+
     public function addUser(RequestAddUser $request)
     {
         return $this->adminService->addUser($request);
@@ -53,4 +58,10 @@ class AdminController extends Controller
         return $this->adminService->changeIsBlockManyUser($request);
     }
     
+
+    public function changePassword(RequestChangePassword $request)
+    {
+        return $this->adminService->changePassword($request);
+    }
+
 }
