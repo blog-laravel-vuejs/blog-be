@@ -57,4 +57,8 @@ class AdminController extends Controller
     {
         return $this->adminService->addMember($request);
     }
+    public function getMembers(Request $request)
+    {
+        return $this->adminService->getMembers($request);
+    }
 }

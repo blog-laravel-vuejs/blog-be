@@ -33,6 +33,7 @@ Route::prefix('admin')->controller(AdminController::class)->group(function () {
     });
     Route::middleware(['check.auth:admin_api', 'role:manager'])->group(function () {
         Route::post('add-member', 'addMember');
+        Route::get('members', 'getMembers');
        
     });
 

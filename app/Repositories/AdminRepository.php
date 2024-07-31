@@ -62,7 +62,7 @@ class AdminRepository extends BaseRepository implements AdminInterface
         }
     }
 
-    public static function searchAdmin($filter)
+    public static function getAllAdmins($filter)
     {
         $filter = (object) $filter;
         $data = (new self)->model
@@ -72,8 +72,10 @@ class AdminRepository extends BaseRepository implements AdminInterface
                         ->orWhere('email', 'LIKE', '%' . $filter->search . '%');
                 });
             })
-            ->when(!empty($filter->role), function ($query) use ($filter) {
-                return $query->where('role', 'LIKE', $filter->role . '%');
+            ->when(isset($filter->role), function ($query) use ($filter) {
+                if ($filter->role !== 'all') {
+                    $query->where('users.role', $filter->role);
+                }
             })
             ->when(!empty($filter->orderBy), function ($query) use ($filter) {
                 $query->orderBy($filter->orderBy, $filter->orderDirection);

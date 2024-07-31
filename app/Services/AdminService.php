@@ -12,6 +12,7 @@ use App\Jobs\SendMailNotify;
 use App\Models\Admin;
 use App\Models\User;
 use App\Repositories\AdminInterface;
+use App\Repositories\AdminRepository;
 use App\Repositories\UserRepository;
 use App\Traits\APIResponse;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
@@ -272,7 +273,58 @@ class AdminService
             return $this->responseError($e->getMessage());
         }
     }
+    public function getMembers(Request $request)
+    {
+        try {
+            $orderBy = $request->typesort ?? 'id';
+            switch ($orderBy) {
+                case 'name':
+                    $orderBy = 'name';
+                    break;
+                case 'email':
+                    $orderBy = 'email';
+                    break;
+                case 'new':
+                    $orderBy = 'id';
+                    break;
 
+                default:
+                    $orderBy = 'id';
+                    break;
+            }
+            $orderDirection = $request->sortlatest ?? 'true';
+            switch ($orderDirection) {
+                case 'true':
+                    $orderDirection = 'DESC';
+                    break;
+
+                default:
+                    $orderDirection = 'ASC';
+                    break;
+            }
+
+            $filter = (object) [
+                'search' => $request->search ?? '',
+                'role' => $request->role ?? 'all',
+                'orderBy' => $orderBy,
+                'orderDirection' => $orderDirection,
+            ];
+
+            $members = AdminRepository::getAllAdmins($filter);
+            if (!(empty($request->paginate))) {
+                $members = $members->paginate($request->paginate);
+            } else {
+                $members = $members->get();
+            }
+
+            return $this->responseSuccessWithData($members, 'Get managers information successfully!');
+        } catch (Throwable $e) {
+            return $this->responseError($e->getMessage());
+        }
+    }
+    
+
+                
 
 
 }
