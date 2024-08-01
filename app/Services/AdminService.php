@@ -373,7 +373,26 @@ class AdminService
         }
     }
 
-    
+    public function deleteManyMember(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            Admin::whereIn('id', $request->ids_member)->delete();
+            $members = Admin::whereIn('id', $request->ids_member)->get();
+            $content = '<strong style="color:green">Your account has been reinstated by the manager !</strong>';
+            foreach ($members as $member){
+             Queue::push(new SendMailNotify($member->email, $content));
+             $member->delete();
+            }
+            DB::commit();
+
+            return $this->responseSuccess('Delete many member successfully !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage());
+        }
+    }
 
                 
 

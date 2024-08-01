@@ -70,4 +70,8 @@ class AdminController extends Controller
     {
         return $this->adminService->deleteMember($request, $id_member);
     }
+    public function deleteManyMember(Request $request)
+    {
+        return $this->adminService->deleteManyMember($request);
+    }
 }

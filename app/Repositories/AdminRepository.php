@@ -79,7 +79,9 @@ class AdminRepository extends BaseRepository implements AdminInterface
             })
             ->when(!empty($filter->orderBy), function ($query) use ($filter) {
                 $query->orderBy($filter->orderBy, $filter->orderDirection);
-            });
+            })
+            ->where('admins.role', '!=', 'manager'); // Exclude admins with role 'manager'
+            
 
         return $data;
     }

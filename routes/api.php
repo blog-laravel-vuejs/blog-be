@@ -36,7 +36,7 @@ Route::prefix('admin')->controller(AdminController::class)->group(function () {
         Route::get('members', 'getMembers');
         Route::post('change-role/{id_admin}', 'changeRole');
         Route::post('delete-member/{id_member}', 'deleteMember');
-
+        Route::post('delete-many-member', 'deleteManyMember');
        
     });
     
