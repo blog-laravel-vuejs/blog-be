@@ -6,6 +6,7 @@ use App\Http\Requests\RequestAddMember;
 use App\Http\Requests\RequestAddUser;
 use App\Http\Requests\RequestChangeIsBlock;
 use App\Http\Requests\RequestChangeIsBlockMany;
+use App\Http\Requests\RequestChangeRole;
 use App\Http\Requests\RequestLogin;
 
 use App\Services\AdminService;
@@ -60,5 +61,9 @@ class AdminController extends Controller
     public function getMembers(Request $request)
     {
         return $this->adminService->getMembers($request);
+    }
+    public function changeRole(RequestChangeRole $request, $id_admin)
+    {
+        return $this->adminService->changeRole($request, $id_admin);
     }
 }

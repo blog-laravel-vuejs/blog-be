@@ -75,7 +75,7 @@ class AdminRepository extends BaseRepository implements AdminInterface
             ->when(isset($filter->role), function ($query) use ($filter) {
                 if ($filter->role !== 'all') {
                     $query->where('admins.role', $filter->role);
-                }
+                    }
             })
             ->when(!empty($filter->orderBy), function ($query) use ($filter) {
                 $query->orderBy($filter->orderBy, $filter->orderDirection);
