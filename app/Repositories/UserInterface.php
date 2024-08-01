@@ -12,6 +12,7 @@ interface UserInterface extends RepositoryInterface
     public static function findUserByEmail($email);
 
     public static function findUserById($id);
+    public static function findUserByUsername($username);
 
     public static function updateUser($id, $data);
 
@@ -20,6 +21,7 @@ interface UserInterface extends RepositoryInterface
     public static function findUser($filter);
 
     public static function createUser($data);
+    public static function getAllUsers($filter);
 
 
 }

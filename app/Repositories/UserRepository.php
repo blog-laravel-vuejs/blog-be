@@ -22,6 +22,9 @@ class UserRepository extends BaseRepository implements UserInterface
     {
         return (new self)->model->where('email', $email)->first();
     }
+    public static function findUserByUsername($username){
+        return (new self)->model->where('username', $username)->first();
+    }
 
     public static function findUserById($id)
     {
@@ -58,8 +61,8 @@ class UserRepository extends BaseRepository implements UserInterface
             ->when(!empty($filter->email), function ($q) use ($filter) {
                 $q->where('email', $filter->email);
             })
-            ->when(!empty($filter->role), function ($q) use ($filter) {
-                $q->where('role', $filter->role);
+            ->when(!empty($filter->username), function ($q) use ($filter) {
+                $q->where('username', $filter->username);
             });
 
         return $user;
@@ -73,12 +76,7 @@ class UserRepository extends BaseRepository implements UserInterface
                 'email' => $filter->email,
                 'password' => $filter->password,
                 'username' => $filter->username,
-                'avatar' => $filter->avatar,
-                'gender' => $filter->gender,
-                'phone' => $filter->phone,
-                'address' => $filter->address,
-                'date_of_birth' => $filter->date_of_birth,
-                'is_block' => 1,
+                'is_block' => 0,
             ]);
             DB::commit();
 
@@ -87,6 +85,32 @@ class UserRepository extends BaseRepository implements UserInterface
             DB::rollback();
             throw $e;
         }
+    }
+
+    public static function getAllUsers($filter)
+    {
+        $filter = (object) $filter;
+        $data = (new self)->model
+            ->when(!empty($filter->search), function ($q) use ($filter) {
+                $q->where(function ($query) use ($filter) {
+                    $query->where('email', 'LIKE', '%' . $filter->search . '%')
+                        ->orWhere('name', 'LIKE', '%' . $filter->search . '%')
+                        ->orWhere('phone', 'LIKE', '%' . $filter->search . '%')
+                        ->orWhere('address', 'LIKE', '%' . $filter->search . '%')
+                        ->orWhere('date_of_birth', 'LIKE', '%' . $filter->search . '%')
+                        ->orWhere('username', 'LIKE', '%' . $filter->search . '%');
+                });
+            })
+            ->when(isset($filter->is_block), function ($query) use ($filter) {
+                if ($filter->is_block !== 'all') {
+                    $query->where('users.is_block', $filter->is_block);
+                }
+            })
+            ->when(!empty($filter->orderBy), function ($query) use ($filter) {
+                $query->orderBy($filter->orderBy, $filter->orderDirection);
+            });
+
+        return $data;
     }
 
    

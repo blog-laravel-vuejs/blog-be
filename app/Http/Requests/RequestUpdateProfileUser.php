@@ -2,12 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Traits\APIResponse;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
 
-class RequestUserRegister extends FormRequest
+class RequestUpdateProfileUser extends FormRequest
 {
+    use APIResponse;
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -26,24 +28,20 @@ class RequestUserRegister extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string',
-            'username' => 'required|string|unique:users,username',
-            'email' => 'required|unique:users,email|string|email|max:100',
-            'password' => 'required|string|min:6|confirmed',
-           
+            'name' => 'required|string|between:2,60',
+            'address' => 'string|min:1|max:120',
+            'date_of_birth' => 'string|min:1',
+            'phone' => 'min:9|numeric',
+            'gender' => 'in:1,0,2',
+            'avatar' => 'file|image',
         ];
     }
 
     public function failedValidation(Validator $validator)
     {
         $errors = $validator->errors()->all();
-        throw new HttpResponseException(response()->json([
-            'success' => false,
-            'message' => 'Validation errors',
-            'data' => $errors,
-            'errors' => $validator->errors(),
-            'status' => 422,
-        ], 422));
+
+        return $this->responseErrorValidate($errors, $validator);
     }
 
     public function messages()

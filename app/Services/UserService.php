@@ -3,21 +3,33 @@
 namespace App\Services;
 
 use App\Enums\UserEnum;
+use App\Http\Requests\RequestChangePassword;
+use App\Http\Requests\RequestCreatePassword;
 use App\Http\Requests\RequestLogin;
+use App\Http\Requests\RequestSendForgot;
+use App\Http\Requests\RequestUpdateProfileUser;
 use App\Http\Requests\RequestUserRegister;
+use App\Jobs\SendForgotPassword;
+use App\Models\PasswordReset;
 use App\Models\User;
 
 use App\Repositories\UserInterface;
 use App\Repositories\UserRepository;
-use Brian2694\Toastr\Facades\Toastr;
+use App\Traits\APIResponse;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 
 use Throwable;
 
 class UserService
 {
+    use APIResponse;
     protected UserInterface $userRepository;
 
     public function __construct(
@@ -25,67 +37,29 @@ class UserService
     ) {
         $this->userRepository = $userRepository;
     }
-
-    public function refresh()
-    {
-        return $this->respondWithToken(auth('user_api')->refresh());
-    }
-
-    protected function respondWithToken($token)
-    {
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth()->guard('user_api')->factory()->getTTL() * 60,
-        ]);
-    }
-
-    public function responseOK($status = 200, $data = null, $message = '')
-    {
-        return response()->json([
-            'message' => $message,
-            'data' => $data,
-            'status' => $status,
-        ], $status);
-    }
-
-    public function responseError($status = 400, $message = '')
-    {
-        return response()->json([
-            'message' => $message,
-            'status' => $status,
-        ], $status);
-    }
-
     public function login(RequestLogin $request)
     {
         try {
             $user = $this->userRepository->findUserByEmail($request->email);
             if (empty($user)) {
-                return $this->responseError(400, 'Email không tồn tại !');
-            } else {
-                $is_block = $user->is_block;
-                if ($is_block != 1) {
-                    return $this->responseError(400, 'Tài khoản của bạn đã bị khóa hoặc chưa được phê duyệt !');
-                }
-                if ($user->email_verified_at == null) {
-                    return $this->responseError(400, 'Email này chưa được xác nhận , hãy kiểm tra và xác nhận nó trước khi đăng nhập !');
-                }
+                return $this->responseError('Email does not exist !');
+            }
+            if ($user->is_block != 1) {
+                return $this->responseError('Your account has been locked !');
             }
 
             $credentials = request(['email', 'password']);
             if (!$token = auth()->guard('user_api')->attempt($credentials)) {
-                return $this->responseError(400, 'Email hoặc mật khẩu không chính xác !');
+                return $this->responseError('Email or password is incorrect!');
             }
 
             $user->access_token = $token;
             $user->token_type = 'bearer';
             $user->expires_in = auth()->guard('user_api')->factory()->getTTL() * 60;
 
-            // return $this->responseSuccessWithData($user, 'Logged in successfully !');
-            return $this->responseOK(200, $user, 'Đăng nhập thành công!');
+            return $this->responseSuccessWithData($user, 'Logged in successfully !');
         } catch (Throwable $e) {
-            return $this->responseError(400, $e->getMessage());
+            return $this->responseError($e->getMessage());
         }
 
     }
@@ -94,8 +68,12 @@ class UserService
         try {
             // Kiểm tra xem email đã tồn tại trong cơ sở dữ liệu hay chưa
             $userEmail = $this->userRepository->findUserbyEmail($request->email);
+            $userName = $this->userRepository->findUserbyUserName($request->username);
             if ($userEmail) {
-                return $this->responseError(400, 'Tài khoản đã tồn tại!');
+                return $this->responseError('Account existed!', 400);
+            }
+            if ($userName) {
+                return $this->responseError('Username existed!',400 );
             }
 
             // Khởi tạo mảng dữ liệu người dùng từ request
@@ -104,68 +82,149 @@ class UserService
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'username' => $request->username,
-                'avatar' => null,
-                'gender' => $request->gender,
-                'phone' => $request->phone,
-                'address' => $request->address,
-                'date_of_birth' => $request->date_of_birth,
-                'is_block' => 1,
+                'is_block' => 0,
             ];
-
-            // Kiểm tra và xử lý việc upload avatar nếu có
-            if ($request->hasFile('avatar')) {
-                $image = $request->file('avatar');
-                $uploadedFile = Cloudinary::upload($image->getRealPath(), ['folder' => 'avatars', 'resource_type' => 'auto']);
-                $data['avatar'] = $uploadedFile->getSecurePath();
-            }
 
             // Tạo người dùng mới
             $user = $this->userRepository->createUser((object)$data);
-
-            return $this->responseOK(200, $user, 'Đăng kí tài khoản thành công!');
+            return $this->responseSuccess('Register successfully! Login now continue discovery blog !', 201);
         } catch (Throwable $e) {
-            return $this->responseError(400, $e->getMessage());
+            return $this->responseError($e->getMessage(),400);
         }
     }
 
-    // public function userRegister(RequestUserRegister $request)
-    // {
-    //     try {
-    //         $filter = (object) [
-    //             'name' => $request->name,
-    //             'email' => $request->email,
-    //             'password' => Hash::make($request->password),
-    //             'username' => $request->username,
-    //             'avatar' => $request->avatar,
-    //             'gender' => $request->gender,
-    //             'phone' => $request->phone,
-    //             'address'=>$request->address,
-    //             'date_of_birth' =>$request->date_of_birth,
-    //             'is_block' => 1,
+    // send code forgot password
+    public function forgotPassword(RequestSendForgot $request)
+    {
+        DB::beginTransaction();
+        try {
+            $email = $request->email;
+            $findUser = User::where('email', $email)->first();
+            if (empty($findUser)) {
+                return $this->responseError('No account found in the system !', 400);
+            }
+            $token = Str::random(32);
+            $role = 'user';
+            $user = PasswordReset::where('email', $email)->where('role', $role)->first();
+            if ($user) {
+                $user->update(['token' => $token]);
+            } else {
+                PasswordReset::create(['email' => $email, 'token' => $token, 'role' => $role]);
+            }
+            $url = UserEnum::FORGOT_FORM_USER . $token;
+            Log::info("Add jobs to Queue , Email: $email with URL: $url");
+            Queue::push(new SendForgotPassword($email, $url));
+            DB::commit();
 
-    //         ];
-    //         $userEmail = $this->userRepository->findUserbyEmail($request->email);
-    //         if ($userEmail) {
-    //             return $this->responseError(400, 'Tài khoản đã tồn tại !');
-    //         } else {
-    //             if ($request->hasFile('avatar')) {
-    //                 // upload file
-    //                 $image = $request->file('avatar');
-    //                 $uploadedFile = Cloudinary::upload($image->getRealPath(), ['folder' => 'avatars', 'resource_type' => 'auto']);
-    //                 $avatar = $uploadedFile->getSecurePath();
-    //                 // upload profile
-    //                 $data = array_merge($request->all(), ['avatar' => $avatar]);
-    //                 // $user->update($data);
-    //             } 
-    //             // $filter->avatar = $this->saveAvatar($filter);
-    //             $user = $this->userRepository->createUser($filter);
+            return $this->responseSuccess('Password reset email sent successfully, please check your email !', 201);
+        } catch (Throwable $e) {
+            DB::rollback();
 
-    //             return $this->responseOK(200, $user, 'Đăng kí tài khoản thành công !');
-    //         }
-    //     } catch (Throwable $e) {
-    //         return $this->responseError(400, $e->getMessage());
-    //     }
-    // }
+            return $this->responseError($e->getMessage(), 400);
+        }
+    }
+
+    public function forgotUpdate(RequestCreatePassword $request)
+    {
+        DB::beginTransaction();
+        try {
+            $token = $request->token ?? '';
+            $new_password = Hash::make($request->new_password);
+            $passwordReset = PasswordReset::where('token', $token)->first();
+            if ($passwordReset) {
+                $user = User::where('email', $passwordReset->email);
+                if ($passwordReset->role == 'user' && !empty($user)) {
+                    $user->update(['password' => $new_password]);
+                    $passwordReset->delete();
+
+                    DB::commit();
+
+                    return $this->responseSuccess('Reset password successfully !');
+                } else {
+                    return $this->responseError('Account not found !', 404);
+                }
+            } else {
+                DB::commit();
+
+                return $this->responseError('Token has expired !', 400);
+            }
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage(), 400);
+        }
+    }
+    public function logout(Request $request)
+    {
+        try {
+            auth('user_api')->logout();
+
+            return $this->responseSuccess('Log out successfully !');
+        } catch (Throwable $e) {
+            return $this->responseError($e->getMessage());
+        }
+    }
+    public function profile(Request $request)
+    {
+        try {
+            $user = auth('user_api')->user();
+
+            return $this->responseSuccessWithData($user, 'Get information account successfully !');
+        } catch (Throwable $e) {
+            return $this->responseError($e->getMessage());
+        }
+    }
+    public function updateProfile(RequestUpdateProfileUser $request)
+    {
+        DB::beginTransaction();
+        try {
+            $user = User::find(auth('user_api')->user()->id);
+            if ($request->hasFile('avatar')) {
+                // upload file
+                $image = $request->file('avatar');
+                $uploadedFile = Cloudinary::upload($image->getRealPath(), ['folder' => 'avatars/users', 'resource_type' => 'auto']);
+                $avatar = $uploadedFile->getSecurePath();
+                // delete old file
+                if ($user->avatar) {
+                    $id_file = explode('.', implode('/', array_slice(explode('/', $user->avatar), 7)))[0];
+                    Cloudinary::destroy($id_file);
+                }
+                // upload profile
+                $data = array_merge($request->all(), ['avatar' => $avatar]);
+                $user->update($data);
+            } else {
+                $request['avatar'] = $user->avatar;
+                $user->update($request->all());
+            }
+
+            DB::commit();
+
+            return $this->responseSuccessWithData($user, 'Update profile successful !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage(), 400);
+        }   
+    }
+    public function changePassword(RequestChangePassword $request)
+    {
+        DB::beginTransaction();
+        try {
+            $user = User::find(auth('user_api')->user()->id);
+            if (!(Hash::check($request->get('current_password'), $user->password))) {
+                return $this->responseError('Your password is incorrect !');
+            }
+            $data = ['password' => Hash::make($request->get('new_password'))];
+            $user->update($data);
+            DB::commit();
+
+            return $this->responseSuccess('Password change successful !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage());
+        }
+    }
 }
 
 

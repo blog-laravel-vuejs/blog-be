@@ -20,7 +20,7 @@ class AdminSeeder extends Seeder
             'name' => 'Trần Thị Kim Tiến',
             'email' => 'kimtientran0410@gmail.com',
             'password' => Hash::make('kimtientran0410'),
-            'role' => '1',
+            'role' => 'admin',
             'avatar' => null,
             'token_verify_email' => null,
             'email_verified_at' => now(),

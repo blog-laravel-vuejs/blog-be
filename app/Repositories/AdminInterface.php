@@ -19,5 +19,6 @@ interface AdminInterface extends RepositoryInterface
 
     public static function updateAdmin($id, $data);
 
-    public static function searchAdmin($filter);
+    // public static function searchAdmin($filter);
+    public static function getAllAdmins($filter);
 }

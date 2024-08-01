@@ -2,12 +2,14 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Traits\APIResponse;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class RequestUserRegister extends FormRequest
+class RequestUpdateProfileAdmin extends FormRequest
 {
+    use APIResponse;
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -27,10 +29,7 @@ class RequestUserRegister extends FormRequest
     {
         return [
             'name' => 'required|string',
-            'username' => 'required|string|unique:users,username',
-            'email' => 'required|unique:users,email|string|email|max:100',
-            'password' => 'required|string|min:6|confirmed',
-           
+
         ];
     }
 

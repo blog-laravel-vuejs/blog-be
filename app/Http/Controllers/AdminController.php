@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Http\Requests\RequestAddMember;
+use App\Http\Requests\RequestAddUser;
+use App\Http\Requests\RequestChangeIsBlock;
+use App\Http\Requests\RequestChangeIsBlockMany;
+use App\Http\Requests\RequestChangeRole;
 use App\Http\Requests\RequestLogin;
 
 use App\Services\AdminService;
-
+use Illuminate\Http\Request;
+use App\Http\Requests\RequestUpdateProfileAdmin;
 class AdminController extends Controller
 {
     protected AdminService $adminService;
@@ -21,23 +26,52 @@ class AdminController extends Controller
         return $this->adminService->login($request);
     }
 
-    public function profile()
+    public function logout(Request $request)
     {
-        return response()->json([
-            'message' => 'Xem thông tin cá nhân thành công !',
-            'data' => auth('admin_api')->user(),
-            'status' => 200,
-        ], 200);
+        return $this->adminService->logout($request);
     }
-
-    public function logout()
+    public function profile(Request $request)
     {
-        auth('admin_api')->logout();
-
-        return response()->json([
-            'message' => 'Đăng xuất thành công !',
-            'status' => 200,
-        ], 200);
+        return $this->adminService->profile($request);
     }
-
+    public function updateProfile(RequestUpdateProfileAdmin $request)
+    {
+        return $this->adminService->updateProfile($request);
+    }
+    public function addUser(RequestAddUser $request)
+    {
+        return $this->adminService->addUser($request);
+    }
+    public function getUsers(Request $request)
+    {
+        return $this->adminService->getUsers($request);
+    }
+    public function changeIsBlockUser(RequestChangeIsBlock $request, $id_user)
+    {
+        return $this->adminService->changeIsBlockUser($request, $id_user);
+    }
+    public function changeIsBlockManyUser(RequestChangeIsBlockMany $request)
+    {
+        return $this->adminService->changeIsBlockManyUser($request);
+    }
+    public function addMember(RequestAddMember $request)
+    {
+        return $this->adminService->addMember($request);
+    }
+    public function getMembers(Request $request)
+    {
+        return $this->adminService->getMembers($request);
+    }
+    public function changeRole(RequestChangeRole $request, $id_admin)
+    {
+        return $this->adminService->changeRole($request, $id_admin);
+    }
+    public function deleteMember(Request $request, $id_member)
+    {
+        return $this->adminService->deleteMember($request, $id_member);
+    }
+    public function deleteManyMember(Request $request)
+    {
+        return $this->adminService->deleteManyMember($request);
+    }
 }
