@@ -331,9 +331,7 @@ class AdminService
             $admin = Admin::find($id_admin);
             if ($admin) {
                 $admin->update(['role' => $request->role]);
-                if ($request->is_block == 0) $content = '<strong style="color:red">Your account has been changed role by manager, if you think this is a mistake please contact the system !</strong>';
-                else $content = "<strong style='color:green'>Your account has been changed role {{$request->role}} !</strong>";
-
+                $content = "Your account has been changed role : <strong style='color:green'> {{$request->role}} !</strong>";
                 Queue::push(new SendMailNotify($admin->email, $content));
 
                 DB::commit();

@@ -66,4 +66,5 @@ class AdminController extends Controller
     {
         return $this->adminService->changeRole($request, $id_admin);
     }
+   
 }
