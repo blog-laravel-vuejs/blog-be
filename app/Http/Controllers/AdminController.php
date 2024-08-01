@@ -66,4 +66,8 @@ class AdminController extends Controller
     {
         return $this->adminService->changeRole($request, $id_admin);
     }
+    public function deleteMember(Request $request, $id_member)
+    {
+        return $this->adminService->deleteMember($request, $id_member);
+    }
 }

@@ -331,9 +331,7 @@ class AdminService
             $admin = Admin::find($id_admin);
             if ($admin) {
                 $admin->update(['role' => $request->role]);
-                if ($request->is_block == 0) $content = '<strong style="color:red">Your account has been changed role by manager, if you think this is a mistake please contact the system !</strong>';
-                else $content = "<strong style='color:green'>Your account has been changed role {{$request->role}} !</strong>";
-
+                $content = "Your account has been changed role:  <strong style='color:green'> {{$request->role}} !</strong>";
                 Queue::push(new SendMailNotify($admin->email, $content));
 
                 DB::commit();
@@ -350,6 +348,31 @@ class AdminService
             return $this->responseError($e->getMessage());
         }
     }
+    public function deleteMember(Request $request, $id_member)
+    {
+        DB::beginTransaction();
+        try {
+            $member = Admin::find($id_member);
+            if ($member) {
+                $member->delete();
+                $content = '<strong style="color:green">Your account has been reinstated by the manager !</strong>';
+
+                Queue::push(new SendMailNotify($member->email, $content));
+
+                DB::commit();
+                return $this->responseSuccess('Delete member successfully !');
+            } else {
+                DB::commit();
+
+                return $this->responseError(404, 'Not found member !');
+            }
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage());
+        }
+    }
+
     
 
                 
