@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -53,5 +54,12 @@ Route::prefix('user')->controller(UserController::class)->group(function () {
         Route::get('profile', 'profile');
         Route::post('update', 'updateProfile');
         Route::post('change-password', 'changePassword');
+    });
+});
+// Category
+Route::prefix('category')->controller(CategoryController::class)->group(function () {
+    Route::middleware('auth:admin_api')->group(function () {
+        Route::post('add', 'add');
+        
     });
 });

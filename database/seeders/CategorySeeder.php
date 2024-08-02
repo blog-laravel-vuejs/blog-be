@@ -16,7 +16,7 @@ class CategorySeeder extends Seeder
      */
     public function run()
     {
-        //
+        // //
         $categories = [
             [
                 'name' => 'Laravel',
@@ -41,7 +41,6 @@ class CategorySeeder extends Seeder
         ];
         foreach ($categories as $index => $category) {
             try {
-                while (true) {
                  Category::create([
                             'name' => $category['name'],
                             'description_category' => $category['description_category'],
@@ -51,7 +50,7 @@ class CategorySeeder extends Seeder
                             'updated_at' => now(),
                         ]);
                 }
-            } catch (\Exception $e) {
+            catch (\Exception $e) {
                 // return $e->getMessage();
             }
         }
