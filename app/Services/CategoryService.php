@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Http\Requests\RequestCreateCategory;
+use App\Http\Requests\RequestUpdateCategory;
 use App\Models\Category;
 use App\Repositories\CategoryInterface;
 use App\Repositories\CategoryRepository;
@@ -86,6 +87,41 @@ class CategoryService
 
             return $this->responseSuccessWithData($categories, 'Get category information successfully!');
         } catch (Throwable $e) {
+            return $this->responseError($e->getMessage());
+        }
+    }
+
+    public function update(RequestUpdateCategory $request,$id_category){
+        DB::beginTransaction();
+        try {
+            $category = Category::find($id_category);
+            if($request->hasFile('thumbnail')){
+                // upload file
+                $image = $request->file('thumbnail');
+                $thumbnail = Cloudinary::upload($image->getRealPath(), [
+                    'folder' => 'thumbnail/categories',
+                    'resource_type' => 'auto'
+                    ])->getSecurePath();
+                // delete old file
+                if($category->thumbnail){
+                    $id_file=explode('.', implode('/', array_slice(explode('/', $category->thumbnail), 7)))[0];
+                    Cloudinary::destroy($id_file);
+                }
+                // update data
+                $data = array_merge($request->all(), ['thumbnail' => $thumbnail]);
+                $category->update($data);
+            }
+            else{
+                $request['thumbnail']=$category->thumbnail;
+                $category->update($request->all());
+            }
+            
+            DB::commit();
+
+            return $this->responseSuccessWithData($category, 'Update category successfully !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
             return $this->responseError($e->getMessage());
         }
     }

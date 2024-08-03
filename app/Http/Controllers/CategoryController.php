@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Http\Requests\RequestCreateCategory;
+use App\Http\Requests\RequestUpdateCategory;
 use App\Models\Category;
 use App\Services\CategoryService;
 use App\Traits\APIResponse;
@@ -21,5 +22,8 @@ class CategoryController extends Controller
     }
     public function all(Request $request){
         return $this->categoryService->all($request);
+    }
+    public function update(RequestUpdateCategory $request, $id_category){
+        return $this->categoryService->update($request, $id_category);
     }
 }
