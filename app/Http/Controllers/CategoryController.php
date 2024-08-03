@@ -19,4 +19,7 @@ class CategoryController extends Controller
     public function add(RequestCreateCategory $request){
         return $this->categoryService->add($request);
     }
+    public function all(Request $request){
+        return $this->categoryService->all($request);
+    }
 }

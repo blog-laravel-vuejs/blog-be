@@ -62,4 +62,5 @@ Route::prefix('category')->controller(CategoryController::class)->group(function
         Route::post('add', 'add');
         
     });
+    Route::get('/', 'all');
 });
