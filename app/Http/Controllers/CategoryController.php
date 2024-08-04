@@ -26,4 +26,7 @@ class CategoryController extends Controller
     public function update(RequestUpdateCategory $request, $id_category){
         return $this->categoryService->update($request, $id_category);
     }
+    public function delete($id_category){
+        return $this->categoryService->delete($id_category);
+    }
 }

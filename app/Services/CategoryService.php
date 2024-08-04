@@ -126,5 +126,28 @@ class CategoryService
         }
     }
 
+    public function delete($id_category){
+        DB::beginTransaction();
+        try {
+            $category = Category::find($id_category);
+            if($category){
+                if($category->thumbnail){
+                    $id_file=explode('.', implode('/', array_slice(explode('/', $category->thumbnail), 7)))[0];
+                    Cloudinary::destroy($id_file);
+                }
+                $category->delete();
+                DB::commit();
+            } else{
+                DB::commit();
+                return $this->responseError('Category not found !');
+            }
+            return $this->responseSuccess('Delete category successfully !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage());
+        }
+    }
+
     
 }
