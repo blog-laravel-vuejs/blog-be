@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 use App\Traits\APIResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 
 class CategoryService
 {
@@ -148,6 +149,29 @@ class CategoryService
             return $this->responseError($e->getMessage());
         }
     }
-
+    public function deleteMany(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $list_id = $request->list_id;
+            $categories = CategoryRepository::getCategory(['list_id' => $list_id])->get();
+            if (!$categories->isEmpty()) { 
+                foreach ($categories as $category) {
+                    if ($category->thumbnail) {
+                        $id_file = explode('.', implode('/', array_slice(explode('/', $category->thumbnail), 7)))[0];
+                        Cloudinary::destroy($id_file);
+                    }
+                    $category->delete();
+                }
+                DB::commit();
+                return $this->responseSuccess('Xóa các danh mục thành công!');
+            } else {
+                return $this->responseError('Không tìm thấy danh mục nào để xóa.', 404);
+            }
+        } catch (Throwable $e) {
+            DB::rollback();
+            return $this->responseError($e->getMessage());
+        }
+    }
     
 }
