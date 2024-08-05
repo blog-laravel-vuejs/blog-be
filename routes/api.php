@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -65,4 +66,11 @@ Route::prefix('category')->controller(CategoryController::class)->group(function
         Route::post('deletes', 'deleteMany');
     });
     Route::get('/', 'all');
+});
+
+
+Route::prefix('article')->controller(ArticleController::class)->group(function () {
+    Route::middleware(['auth:admin_api,user_api'])->group(function () {
+        Route::post('add', 'add');
+    });
 });
