@@ -72,5 +72,6 @@ Route::prefix('category')->controller(CategoryController::class)->group(function
 Route::prefix('article')->controller(ArticleController::class)->group(function () {
     Route::middleware(['auth:admin_api,user_api'])->group(function () {
         Route::post('add', 'add');
+        Route::get('my-article', 'myArticle');
     });
 });

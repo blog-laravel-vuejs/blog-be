@@ -17,4 +17,7 @@ class ArticleController extends Controller
     {
         return $this->articleService->add($request);
     }
+    public function myArticle(Request $request){
+        return $this->articleService->myArticle($request);
+    }
 }
