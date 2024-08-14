@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RequestChangeIsShow;
 use App\Http\Requests\RequestCreateArticle;
 use App\Http\Requests\RequestUpdateArticle;
 use App\Services\ArticleService;
@@ -23,5 +24,8 @@ class ArticleController extends Controller
     }
     public function update(RequestUpdateArticle $request, $id){
         return $this->articleService->update($request, $id);
+    }
+    public function changeIsShow(RequestChangeIsShow $request, $id_article){
+        return $this->articleService->changeIsShow($request, $id_article);
     }
 }

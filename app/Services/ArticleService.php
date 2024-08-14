@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Requests\RequestChangeIsShow;
 use App\Http\Requests\RequestCreateArticle;
 use App\Http\Requests\RequestUpdateArticle;
 use App\Models\Article;
@@ -148,6 +149,26 @@ class ArticleService
             }
             DB::commit();
             return $this->responseSuccessWithData($article, 'Update article successfully !');
+        } catch (Throwable $e) {
+            DB::rollback();
+            return $this->responseError($e->getMessage());
+        }
+    }
+    public function changeIsShow(RequestChangeIsShow $request, $id_article)
+    {
+        DB::beginTransaction();
+        try {
+            $article = Article::find($id_article);
+            if (empty($article)) {
+                return $this->responseError('Article not found');
+            }
+            $user = Auth::user();
+            if ($article->id_user != $user->id) {
+                return $this->responseError('You do not have permission to change this article');
+            }
+            $article->update($request->all());
+            DB::commit();
+            return $this->responseSuccessWithData($article, 'Change is show article successfully !');
         } catch (Throwable $e) {
             DB::rollback();
             return $this->responseError($e->getMessage());
