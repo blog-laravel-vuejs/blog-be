@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RequestCreateArticle;
+use App\Http\Requests\RequestUpdateArticle;
 use App\Services\ArticleService;
 use Illuminate\Http\Request;
 use App\Traits\APIResponse;
@@ -19,5 +20,8 @@ class ArticleController extends Controller
     }
     public function myArticle(Request $request){
         return $this->articleService->myArticle($request);
+    }
+    public function update(RequestUpdateArticle $request, $id){
+        return $this->articleService->update($request, $id);
     }
 }

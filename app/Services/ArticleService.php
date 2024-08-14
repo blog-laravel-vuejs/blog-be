@@ -116,5 +116,43 @@ class ArticleService
         }
     }
 
+    public function update(RequestUpdateArticle $request,$id){
+        DB::beginTransaction();
+        try {
+            $user = Auth::user();
+            $article = Article::find($id);
+            if (empty($article)) {
+                return $this->responseError('Article not found');
+            }
+            if ($article->id_user != $user->id) {
+                return $this->responseError('You do not have permission to update this article');
+            }
+            if($request->hasFile('thumbnail')){
+                //upload new image
+                $image = $request->file('thumbnail');
+                $thumbnail = Cloudinary::upload($image->getRealPath(), [
+                    'folder' => 'thumbnail/articles',
+                    'resource_type' => 'auto'
+                ])->getSecurePath();
+                //delete old image
+                if($article->thumbnail){
+                    $id_file = explode('.', implode('/', array_slice(explode('/', $article->thumbnail), 7)))[0];
+                    Cloudinary::destroy($id_file);
+                }
+                $data = array_merge($request->all(), ['thumbnail' => $thumbnail]);
+                $article->update($data);
+            }
+            else{
+                $request['thumbnail']=$article->thumbnail;
+                $article->update($request->all());
+            }
+            DB::commit();
+            return $this->responseSuccessWithData($article, 'Update article successfully !');
+        } catch (Throwable $e) {
+            DB::rollback();
+            return $this->responseError($e->getMessage());
+        }
+    }
+
    
 }
