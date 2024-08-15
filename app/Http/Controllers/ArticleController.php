@@ -32,4 +32,8 @@ class ArticleController extends Controller
     {
         return $this->articleService->delete($id_article);
     }
+    public function getAll(Request $request)
+    {
+        return $this->articleService->getAll($request);
+    }
 }

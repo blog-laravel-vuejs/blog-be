@@ -200,6 +200,56 @@ class ArticleService
             return $this->responseError($e->getMessage());
         }
     }
+    //admin
+    public function getAll(Request $request){
+        try {
+            $orderBy = $request->typesort ?? 'articles.id';
+            switch ($orderBy) {
+                case 'title':
+                    $orderBy = 'title';
+                    break;
+                case 'name':
+                    $orderBy = 'categories.name';
+                    break;
+                case 'new':
+                    $orderBy = 'id';
+                    break;
+                case 'search_number': // sắp xếp theo bài viết nổi bật
+                    $orderBy = 'search_number_article';
+                    break;
+                default:
+                    $orderBy = 'id';
+                    break;
+            }
+            $orderDirection = $request->sortlatest ?? 'true';
+            switch ($orderDirection) {
+                case 'true':
+                    $orderDirection = 'DESC';
+                    break;
 
+                default:
+                    $orderDirection = 'ASC';
+                    break;
+            }
+
+            $filter = (object) [
+                'search' => $request->search ?? '',
+                'name_category' => $request->name_category ?? '',
+                'orderBy' => $orderBy,
+                'orderDirection' => $orderDirection,
+                'is_accept' => $request->is_accept ?? 'both',
+                'is_show' => $request->is_show ?? 'both',
+            ];
+            if (!(empty($request->paginate))) {
+                $articles = $this->articleRepository->searchAll($filter)->paginate($request->paginate);
+            } else {
+                $articles = $this->articleRepository->searchAll($filter)->get();
+            }
+
+            return $this->responseSuccessWithData($articles, 'Get article information successfully!');
+        } catch (Throwable $e) {
+            return $this->responseError($e->getMessage());
+        }
+    }
    
 }

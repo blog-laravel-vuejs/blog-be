@@ -109,14 +109,14 @@ class ArticleRepository extends BaseRepository implements ArticleInterface
                 $query->where('articles.id', '=', $filter->id);
             })
 
-            // admin manage all article
-            // ->when(!empty($filter->role), function ($query) use ($filter) {
-            //     if ($filter->role === 'admin') {
-            //         $query->where('id_user', null);
-            //     } else {
-            //         $query->where('users.role', $filter->role);
-            //     }
-            // })
+           // admin manage all article
+            ->when(!empty($filter->role), function ($query) use ($filter) {
+                if ($filter->role === 'admin' || $filter->role === 'manager' || $filter->role === 'superadmin') {
+                    $query->where('id_user', null);
+                } //else {
+                //     $query->where('users.role', $filter->role);
+                // }
+            })
             ->when(!empty($filter->id_user), function ($query) use ($filter) {
                 $query->where('articles.id_user', $filter->id_user);
             });

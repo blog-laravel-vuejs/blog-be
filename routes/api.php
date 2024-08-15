@@ -70,11 +70,14 @@ Route::prefix('category')->controller(CategoryController::class)->group(function
 
 
 Route::prefix('article')->controller(ArticleController::class)->group(function () {
-    Route::middleware(['auth:admin_api,user_api'])->group(function () {
+    Route::middleware('auth:user_api')->group(function () {
         Route::post('add', 'add');
         Route::get('my-article', 'myArticle');
         Route::post('update/{id_article}', 'update');
         Route::post('change-is-show/{id_article}', 'changeIsShow');
         Route::post('delete/{id_article}', 'delete');
+    });
+    Route::middleware('auth:admin_api')->group(function () {
+        Route::get('all', 'getAll');
     });
 });
