@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RequestChangeIsAccept;
 use App\Http\Requests\RequestChangeIsShow;
 use App\Http\Requests\RequestCreateArticle;
 use App\Http\Requests\RequestUpdateArticle;
@@ -35,5 +36,8 @@ class ArticleController extends Controller
     public function getAll(Request $request)
     {
         return $this->articleService->getAll($request);
+    }
+    public function changeIsAccept(RequestChangeIsAccept $request, $id_article){
+        return $this->articleService->changeIsAccept($request, $id_article);
     }
 }

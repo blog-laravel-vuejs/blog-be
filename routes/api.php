@@ -79,5 +79,6 @@ Route::prefix('article')->controller(ArticleController::class)->group(function (
     });
     Route::middleware('auth:admin_api')->group(function () {
         Route::get('all', 'getAll');
+        Route::post('change-is-accept/{id_article}', 'changeIsAccept');
     });
 });

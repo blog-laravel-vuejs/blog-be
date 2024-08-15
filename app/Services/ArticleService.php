@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Requests\RequestChangeIsAccept;
 use App\Http\Requests\RequestChangeIsShow;
 use App\Http\Requests\RequestCreateArticle;
 use App\Http\Requests\RequestUpdateArticle;
@@ -251,5 +252,22 @@ class ArticleService
             return $this->responseError($e->getMessage());
         }
     }
+
+    public function changeIsAccept(RequestChangeIsAccept $request,$id_article){
+        try{
+            $article = Article::find($id_article);
+            if (empty($article)) {
+                return $this->responseError('Article not found');
+            }
+            $article->update(['is_accept'=>$request->is_accept]);
+            DB::commit();
+            return $this->responseSuccessWithData($article, 'Change is accept article successfully !');
+        } catch (Throwable $e) {
+            DB::rollback();
+            return $this->responseError($e->getMessage());
+        }
+    }
+
+    
    
 }
