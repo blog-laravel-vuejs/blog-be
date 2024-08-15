@@ -166,7 +166,7 @@ class ArticleService
             if ($article->id_user != $user->id) {
                 return $this->responseError('You do not have permission to change this article');
             }
-            $article->update($request->all());
+            $article->update(['is_show'=>$request->is_show]);
             DB::commit();
             return $this->responseSuccessWithData($article, 'Change is show article successfully !');
         } catch (Throwable $e) {
