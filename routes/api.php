@@ -75,5 +75,6 @@ Route::prefix('article')->controller(ArticleController::class)->group(function (
         Route::get('my-article', 'myArticle');
         Route::post('update/{id_article}', 'update');
         Route::post('change-is-show/{id_article}', 'changeIsShow');
+        Route::post('delete/{id_article}', 'delete');
     });
 });

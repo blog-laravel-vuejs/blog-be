@@ -28,4 +28,8 @@ class ArticleController extends Controller
     public function changeIsShow(RequestChangeIsShow $request, $id_article){
         return $this->articleService->changeIsShow($request, $id_article);
     }
+    public function delete($id_article)
+    {
+        return $this->articleService->delete($id_article);
+    }
 }

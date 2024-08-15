@@ -175,5 +175,31 @@ class ArticleService
         }
     }
 
+    public function delete($id_article)
+    {
+        DB::beginTransaction();
+        try {
+            $article = Article::find($id_article);
+            if (empty($article)) {
+                return $this->responseError('Article not found');
+            }
+            $user = Auth::user();
+            if ($article->id_user != $user->id) {
+                return $this->responseError('You do not have permission to change this article');
+            }
+            if ($article->thumbnail) {
+                $id_file = explode('.', implode('/', array_slice(explode('/', $article->thumbnail), 7)))[0];
+                Cloudinary::destroy($id_file);
+            }
+            $article->delete();
+            DB::commit();
+            return $this->responseSuccess('Delete article successfully !');
+        } catch (Throwable $e) {
+            DB::rollback();
+
+            return $this->responseError($e->getMessage());
+        }
+    }
+
    
 }
