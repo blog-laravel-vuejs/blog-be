@@ -81,4 +81,6 @@ Route::prefix('article')->controller(ArticleController::class)->group(function (
         Route::get('all', 'getAll');
         Route::post('change-is-accept/{id_article}', 'changeIsAccept');
     });
+    Route::get('/', 'articleHome');
+    Route::get('/{id_article}', 'detail');
 });

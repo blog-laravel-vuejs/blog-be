@@ -84,6 +84,9 @@ class ArticleRepository extends BaseRepository implements ArticleInterface
                     ->orWhere('users.name', 'LIKE', '%' . $filter->search . '%');
             });
         })
+            ->when(!empty($filter->id_category), function ($query) use ($filter) {
+                return $query->where('categories.id', '=', $filter->id_category);
+            })
             ->when(!empty($filter->name_category), function ($query) use ($filter) {
                 return $query->where('categories.name', '=', $filter->name_category);
             })

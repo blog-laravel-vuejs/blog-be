@@ -40,4 +40,13 @@ class ArticleController extends Controller
     public function changeIsAccept(RequestChangeIsAccept $request, $id_article){
         return $this->articleService->changeIsAccept($request, $id_article);
     }
+    public function articleHome(Request $request)
+    {
+        return $this->articleService->articleHome($request);
+    }
+    public function detail(Request $request,$id_article)
+    {
+        return $this->articleService->detail($request,$id_article);
+    }
+
 }

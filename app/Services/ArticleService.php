@@ -267,6 +267,92 @@ class ArticleService
             return $this->responseError($e->getMessage());
         }
     }
+    public function articleHome(Request $request)
+    {
+      try {
+            $orderBy = $request->typesort ?? 'articles.id';
+            switch ($orderBy) {
+                case 'name':
+                    $orderBy = 'articles.title';
+                    break;
+
+                case 'new':
+                    $orderBy = 'articles.id';
+                    break;
+
+                case 'search_number': // sắp xếp theo bài viết nổi bật
+                    $orderBy = 'articles.search_number';
+                    break;
+
+                default:
+                    $orderBy = 'articles.id';
+                    break;
+            }
+
+            $orderDirection = $request->sortlatest ?? 'true';
+            switch ($orderDirection) {
+                case 'true':
+                    $orderDirection = 'DESC';
+                    break;
+
+                default:
+                    $orderDirection = 'ASC';
+                    break;
+            }
+
+            $filter = (object) [
+                'search' => $request->search ?? '',
+                'id_category' => $request->id_category ?? '',
+                'name_category' => $request->name_category ?? '',
+                'orderBy' => $orderBy,
+                'orderDirection' => $orderDirection,
+                'is_accept' => 1,
+                'is_show' => 1,
+            ];
+
+            if (!(empty($request->paginate))) {
+                $articles = $this->articleRepository->searchAll($filter)->paginate($request->paginate);
+            } else {
+                $articles = $this->articleRepository->searchAll($filter)->get();
+            }
+
+            return $this->responseSuccessWithData($articles, 'Xem tất cả bài viết thành công !');
+        } catch (Throwable $e) {
+            return $this->responseError(400, $e->getMessage());
+        }
+    }
+    public function detail(Request $request, $id_article)
+    {
+        try {
+            $filter = (object) [
+                'id' => $id_article,
+                'is_accept' => 1,
+                'is_show' => 1,
+            ];
+            $article = $this->articleRepository->searchAll($filter)->first();
+            if ($article) {
+                // search number
+                $_article = ArticleRepository::findById($id_article);
+                $search_number = $article->search_number_article + 1;
+                ArticleRepository::updateArticle($_article, ['search_number' => $search_number]);
+                $article->search_number_article = $search_number;
+                // search number
+
+                // search number category
+                if ($article->id_category) {
+                    $category = Category::find($article->id_category);
+                    $category->update(['search_number' => $category->search_number + 1]);
+                }
+                // search number category
+
+                return $this->responseSuccessWithData($article, 'Xem bài viết chi tiết thành công !');
+            } else {
+                return $this->responseError(400, 'Không tìm thấy bài viết !');
+            }
+        } catch (Throwable $e) {
+            return $this->responseError($e->getMessage());
+        }
+    }
 
     
    
